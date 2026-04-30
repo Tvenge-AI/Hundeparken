@@ -34,6 +34,16 @@
       "eas": {
         "projectId": "d50c8dad-ec5b-48d1-9bb0-4c0cc42097e9"
       }
-    }
+    },
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "hundeparken"
+        }
+      ]
+    ]
   }
 }

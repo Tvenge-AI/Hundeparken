@@ -79,7 +79,7 @@ function AppNavigator() {
   )
 }
 
-export default function App() {
+export default Sentry.wrap(function App() {
   const { setSession, fetchProfile, fetchDogs } = useAuthStore()
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -97,7 +97,7 @@ export default function App() {
       <AppNavigator />
     </NavigationContainer>
   )
-}
+});
 
 const styles = StyleSheet.create({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.cream },
