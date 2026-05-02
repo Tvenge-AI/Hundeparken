@@ -1,8 +1,10 @@
 const https = require('https');
+
 const SENTRY_AUTH_TOKEN = process.env.SENTRY_AUTH_TOKEN;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const SENTRY_ORG = process.env.SENTRY_ORG;
 const SENTRY_PROJECT = process.env.SENTRY_PROJECT;
+const EXPO_PUSH_TOKEN = process.env.EXPO_PUSH_TOKEN;
 
 async function getSentryIssues() {
   return new Promise((resolve, reject) => {
@@ -47,6 +49,32 @@ async function analyzeAndFix(issue) {
   });
 }
 
+async function sendPushNotification(title, body, data) {
+  const message = JSON.stringify({
+    to: EXPO_PUSH_TOKEN,
+    sound: 'default',
+    title,
+    body,
+    data,
+  });
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'exp.host',
+      path: '/--/api/v2/push/send',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(message) }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+    req.on('error', reject);
+    req.write(message);
+    req.end();
+  });
+}
+
 async function createGithubIssue(sentryIssue, aiAnalysis) {
   const bodyData = JSON.stringify({
     title: `[AI-Agent] Fix: ${sentryIssue.title}`,
@@ -81,6 +109,12 @@ async function main() {
     if (aiAnalysis.priority === 'high' || aiAnalysis.priority === 'medium') {
       const ghIssue = await createGithubIssue(issue, aiAnalysis);
       console.log(`📝 GitHub issue: ${ghIssue.html_url}`);
+      await sendPushNotification(
+        '🤖 AI-fix klar!',
+        `${issue.title}\n${aiAnalysis.analysis}`,
+        { url: ghIssue.html_url }
+      );
+      console.log('📱 Push-varsel sendt!');
     }
   }
   console.log('🎉 Ferdig!');

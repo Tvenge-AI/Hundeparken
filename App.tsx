@@ -1,4 +1,6 @@
+import * as Sentry from "@sentry/react-native"
 import React, { useEffect } from 'react'
+import { registerForPushNotifications } from './services/pushNotifications'
 import { NavigationContainer } from '@react-navigation/native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -81,6 +83,7 @@ function AppNavigator() {
 
 export default Sentry.wrap(function App() {
   const { setSession, fetchProfile, fetchDogs } = useAuthStore()
+  useEffect(() => { registerForPushNotifications().then(token => { if (token) console.log("Push token:", token) }) }, [])
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
