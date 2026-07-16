@@ -34,7 +34,12 @@ jobs:
             -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY" \
             -o /dev/null -w "Supabase svarte: HTTP %{http_code}\n"
 
+      # Best-effort: holder også repoet aktivt så GitHub ikke slår av den
+      # planlagte jobben etter 60 dager. Feiler dette (f.eks. lese-only
+      # Actions-tillatelser), gjør det ingenting — selve pingen over er det
+      # som teller, og jobben forblir grønn.
       - name: Oppdater tidsstempel (holder repoet aktivt)
+        continue-on-error: true
         run: |
           mkdir -p .github
           date -u +"Sist pinget: %Y-%m-%d %H:%M UTC" > .github/keepalive-last-run.txt
@@ -42,4 +47,4 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add .github/keepalive-last-run.txt
           git commit -m "chore: keepalive ping [skip ci]" || echo "Ingen endring å committe"
-          git push
+          git push || echo "Kunne ikke pushe tidsstempel (sjekk Actions-tillatelser) — pingen gikk uansett"
