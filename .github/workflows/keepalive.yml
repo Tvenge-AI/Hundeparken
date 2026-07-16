@@ -26,12 +26,14 @@ jobs:
 
       - name: Ping Supabase (holder databasen våken)
         run: |
-          set -a; source .env; set +a
-          echo "Pinger $EXPO_PUBLIC_SUPABASE_URL ..."
+          # Plukk ut kun de gyldige linjene fra .env (hopp over evt. placeholder/søppel)
+          URL=$(grep -E '^EXPO_PUBLIC_SUPABASE_URL=' .env | tail -1 | cut -d= -f2- | tr -d '\r')
+          KEY=$(grep -E '^EXPO_PUBLIC_SUPABASE_ANON_KEY=' .env | grep -v 'DIN_' | tail -1 | cut -d= -f2- | tr -d '\r')
+          echo "Pinger $URL (nøkkel-lengde: ${#KEY})"
           curl -sf -m 30 \
-            "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/parks?select=id&limit=1" \
-            -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+            "$URL/rest/v1/parks?select=id&limit=1" \
+            -H "apikey: $KEY" \
+            -H "Authorization: Bearer $KEY" \
             -o /dev/null -w "Supabase svarte: HTTP %{http_code}\n"
 
       # Best-effort: holder også repoet aktivt så GitHub ikke slår av den
