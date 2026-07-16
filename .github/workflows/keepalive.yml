@@ -1,0 +1,45 @@
+name: Keep Supabase Alive
+
+# Gratis-Supabase pauser etter 7 dager uten aktivitet, og da dør hele
+# appen (registrering + innlogging + data). Denne jobben pinger databasen
+# hver 3. dag så prosjektet aldri regnes som inaktivt.
+#
+# Bonus: den skriver en liten tidsstempel-fil tilbake til repoet på hver
+# kjøring. Det holder REPOET aktivt også, slik at GitHub ikke slår av den
+# planlagte jobben etter 60 dager uten aktivitet.
+
+on:
+  schedule:
+    # kl. 06:00 UTC på dag 1, 4, 7, 10 ... i måneden (~hver 3. dag)
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: {}   # lar deg også kjøre den manuelt fra GitHub → Actions
+
+permissions:
+  contents: write          # trengs for å skrive tidsstempel-fila tilbake
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ping Supabase (holder databasen våken)
+        run: |
+          set -a; source .env; set +a
+          echo "Pinger $EXPO_PUBLIC_SUPABASE_URL ..."
+          curl -sf -m 30 \
+            "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/parks?select=id&limit=1" \
+            -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+            -o /dev/null -w "Supabase svarte: HTTP %{http_code}\n"
+
+      - name: Oppdater tidsstempel (holder repoet aktivt)
+        run: |
+          mkdir -p .github
+          date -u +"Sist pinget: %Y-%m-%d %H:%M UTC" > .github/keepalive-last-run.txt
+          git config user.name "keepalive-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add .github/keepalive-last-run.txt
+          git commit -m "chore: keepalive ping [skip ci]" || echo "Ingen endring å committe"
+          git push
