@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "hundeparken",
+    "name": "Hundeparken",
     "slug": "hundeparken",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,16 +16,35 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.tvenge.hundeparken",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Hundeparken bruker fotobiblioteket ditt slik at du kan laste opp bilder av hunden din til profilen din og dele øyeblikk fra hundeparken med andre brukere.",
+        "NSCameraUsageDescription": "Hundeparken bruker kameraet ditt slik at du kan ta bilder av hunden din direkte og laste dem opp til profilen din.",
+        "NSLocationWhenInUseUsageDescription": "Hundeparken bruker posisjonen din for å vise deg hundeparker i nærheten og hjelpe deg med å finne den nærmeste parken."
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
+      "package": "com.tvenge.hundeparken",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -44,6 +63,12 @@
           "organization": "hundeparken"
         }
       ]
-    ]
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/d50c8dad-ec5b-48d1-9bb0-4c0cc42097e9"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

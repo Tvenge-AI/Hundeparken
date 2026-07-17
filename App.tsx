@@ -15,10 +15,16 @@ import ProfileScreen from './src/app/ProfileScreen'
 import MapScreen from './src/app/MapScreen'
 import AddDogScreen from './src/app/AddDogScreen'
 import CheckinScreen from './src/app/CheckinScreen'
-import ReviewScreen from './src/app/ReviewScreen'
 import ParkDetailScreen from './src/app/ParkDetailScreen'
 import MeetupScreen from './src/app/MeetupScreen'
 import SuggestParkScreen from './src/app/SuggestParkScreen'
+import MiniAppsScreen from './src/app/MiniAppsScreen'
+import DogChipScreen from './src/app/DogChipScreen'
+import DogHealthScreen from './src/app/DogHealthScreen'
+import SOSVetScreen from './src/app/SOSVetScreen'
+import FoodCheckerScreen from './src/app/FoodCheckerScreen'
+import RecommendedServicesScreen from './src/app/RecommendedServicesScreen'
+import SummerSafetyScreen from './src/app/SummerSafetyScreen'
 
 const Tab = createMaterialTopTabNavigator()
 const Stack = createNativeStackNavigator()
@@ -29,7 +35,7 @@ function MainTabs() {
       tabBarPosition="bottom"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => {
-          const icons: Record<string, string> = { Hjem: '🏠', Park: "📍", Treff: '📅', Anmeld: '⭐', Profil: '🐶', Kart: '🗺️' }
+          const icons: Record<string, string> = { Hjem: '🏠', Park: "📍", Treff: '📅', Profil: '🐶', Kart: '🗺️', Apps: '📱' }
           return <Text style={{ fontSize: focused ? 22 : 18 }}>{icons[route.name]}</Text>
         },
         tabBarShowIcon: true,
@@ -45,9 +51,9 @@ function MainTabs() {
       <Tab.Screen name="Hjem" component={HomeScreen} />
       <Tab.Screen name="Park" component={CheckinScreen} />
       <Tab.Screen name="Treff" component={MeetupScreen} />
-      <Tab.Screen name="Anmeld" component={ReviewScreen} />
       <Tab.Screen name="Profil" component={ProfileScreen} />
       <Tab.Screen name="Kart" component={MapScreen} options={{ swipeEnabled: false }} />
+      <Tab.Screen name="Apps" component={MiniAppsScreen} />
     </Tab.Navigator>
   )
 }
@@ -75,6 +81,12 @@ function AppNavigator() {
           <Stack.Screen name="AddDog" component={AddDogScreen} options={{ presentation: 'modal' }} />
           <Stack.Screen name="ParkDetail" component={ParkDetailScreen} />
           <Stack.Screen name="SuggestPark" component={SuggestParkScreen} options={{ presentation: 'modal' }} />
+          <Stack.Screen name="DogChip" component={DogChipScreen} />
+          <Stack.Screen name="DogHealth" component={DogHealthScreen} />
+          <Stack.Screen name="SOSVet" component={SOSVetScreen} />
+          <Stack.Screen name="FoodChecker" component={FoodCheckerScreen} />
+          <Stack.Screen name="RecommendedServices" component={RecommendedServicesScreen} />
+          <Stack.Screen name="SummerSafety" component={SummerSafetyScreen} />
         </>
       )}
     </Stack.Navigator>

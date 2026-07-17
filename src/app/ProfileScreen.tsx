@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, ImageBackground } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, ImageBackground, Share, Linking } from 'react-native'
 import { useAuthStore } from '../store/authStore'
 import { supabase } from '../lib/supabase'
 import { Colors, Spacing, Radius, FontSize } from '../lib/theme'
@@ -8,6 +8,9 @@ const TEMPERAMENT_LABELS: Record<string, string> = {
   sosial: '😊 Sosial', leken: '⚡ Leken', rolig: '😌 Rolig',
   sky: '🙈 Sky', beskyttende: '🛡️ Beskyttende', aktiv: '🏃 Aktiv',
 }
+
+const APP_STORE_URL = 'https://apps.apple.com/no/app/hundeparken/id6764643698'
+const SUPPORT_EMAIL = 'thomas.tvenge@gmail.com'
 
 function getAge(birthdate: string): string {
   const today = new Date()
@@ -29,6 +32,30 @@ function isBirthdayToday(birthdate: string): boolean {
 export default function ProfileScreen({ navigation }: any) {
   const { profile, dogs, fetchDogs, signOut } = useAuthStore()
 
+  const shareApp = async () => {
+    try {
+      await Share.share({
+        message: `Sjekk ut Hundeparken 🐾 – en gratis app for hundeeiere med kart over hundeparker, treff med andre hunder og digitalt veterinærkort.\n\n${APP_STORE_URL}`,
+      })
+    } catch (e) {
+      // brukeren avbrøt delingen – ingen handling
+    }
+  }
+
+  const sendFeedback = async () => {
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Tilbakemelding – Hundeparken')}&body=${encodeURIComponent('Hei!\n\nHer er min tilbakemelding:\n\n')}`
+    try {
+      const canOpen = await Linking.canOpenURL(url)
+      if (canOpen) {
+        await Linking.openURL(url)
+      } else {
+        Alert.alert('Send oss en e-post', `Du kan nå oss på ${SUPPORT_EMAIL}`)
+      }
+    } catch (e) {
+      Alert.alert('Send oss en e-post', `Du kan nå oss på ${SUPPORT_EMAIL}`)
+    }
+  }
+
   const deleteDog = (dog: any) => {
     Alert.alert(`Slett ${dog.name}`, `Er du sikker?`, [
       { text: 'Avbryt', style: 'cancel' },
@@ -37,6 +64,32 @@ export default function ProfileScreen({ navigation }: any) {
         await fetchDogs()
       }}
     ])
+  }
+
+  const deleteAccount = () => {
+    Alert.alert(
+      'Slett konto',
+      'Er du sikker? Dette kan ikke angres. All data om deg og hundene dine vil bli permanent slettet.',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Slett konto',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase.functions.invoke('delete-account')
+              if (error) {
+                Alert.alert('Feil', 'Kunne ikke slette kontoen. Prøv igjen senere eller kontakt support.')
+                return
+              }
+              await signOut()
+            } catch (e) {
+              Alert.alert('Feil', 'Kunne ikke slette kontoen. Prøv igjen senere eller kontakt support.')
+            }
+          },
+        },
+      ]
+    )
   }
 
   return (
@@ -124,6 +177,36 @@ export default function ProfileScreen({ navigation }: any) {
             })
           )}
         </View>
+
+        <View style={styles.communitySection}>
+          <TouchableOpacity style={styles.shareBtn} onPress={shareApp} activeOpacity={0.85}>
+            <Text style={styles.communityIcon}>💚</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.shareTitle}>Del Hundeparken</Text>
+              <Text style={styles.shareSub}>Tips en hundevenn – appen blir bedre jo flere vi er</Text>
+            </View>
+            <Text style={styles.shareArrow}>›</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.feedbackBtn} onPress={sendFeedback} activeOpacity={0.85}>
+            <Text style={styles.communityIcon}>💬</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.feedbackTitle}>Send tilbakemelding</Text>
+              <Text style={styles.feedbackSub}>Funnet en feil eller har et ønske? Vi hører gjerne fra deg</Text>
+            </View>
+            <Text style={styles.feedbackArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.dangerSection}>
+          <TouchableOpacity style={styles.deleteAccountBtn} onPress={deleteAccount}>
+            <Text style={styles.deleteAccountText}>🗑️  Slett konto</Text>
+          </TouchableOpacity>
+          <Text style={styles.deleteAccountHint}>
+            Sletter kontoen din permanent. Dette kan ikke angres.
+          </Text>
+        </View>
+
         <View style={{ height: 100 }} />
       </ScrollView>
     </ImageBackground>
@@ -157,4 +240,18 @@ const styles = StyleSheet.create({
   tempRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: Spacing.sm },
   tempChip: { backgroundColor: Colors.greenPale, borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4 },
   tempChipText: { fontSize: FontSize.xs, fontWeight: '600', color: Colors.green },
+  communitySection: { paddingHorizontal: Spacing.md, marginTop: Spacing.sm },
+  communityIcon: { fontSize: 26 },
+  shareBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, backgroundColor: Colors.green, borderRadius: Radius.xl, padding: Spacing.md, marginBottom: Spacing.md },
+  shareTitle: { color: Colors.white, fontWeight: '800', fontSize: FontSize.md },
+  shareSub: { color: 'rgba(255,255,255,0.85)', fontSize: FontSize.xs, marginTop: 2 },
+  shareArrow: { color: Colors.white, fontSize: 26, fontWeight: '700' },
+  feedbackBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, backgroundColor: 'rgba(255,255,255,0.9)', borderWidth: 1.5, borderColor: Colors.greenPale, borderRadius: Radius.xl, padding: Spacing.md },
+  feedbackTitle: { color: Colors.dark, fontWeight: '800', fontSize: FontSize.md },
+  feedbackSub: { color: Colors.gray, fontSize: FontSize.xs, marginTop: 2 },
+  feedbackArrow: { color: Colors.green, fontSize: 26, fontWeight: '700' },
+  dangerSection: { padding: Spacing.lg, marginTop: Spacing.lg, alignItems: 'center' },
+  deleteAccountBtn: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e53935', borderRadius: Radius.full, paddingHorizontal: Spacing.lg, paddingVertical: 12 },
+  deleteAccountText: { color: '#e53935', fontWeight: '700', fontSize: FontSize.md },
+  deleteAccountHint: { fontSize: FontSize.xs, color: Colors.gray, marginTop: Spacing.sm, textAlign: 'center' },
 })

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, TextInput } from 'react-native'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
 import { Colors, Spacing, Radius, FontSize } from '../lib/theme'
@@ -11,6 +11,15 @@ export default function ParkDetailScreen({ route, navigation }: any) {
   const [reviews, setReviews] = useState<any[]>([])
   const [activeCheckin, setActiveCheckin] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+
+  // Review state
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [body, setBody] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
+
+  const userReview = user ? reviews.find(r => r.user_id === user.id) : null
+  const otherReviews = user ? reviews.filter(r => r.user_id !== user.id) : reviews
 
   useEffect(() => {
     fetchData()
@@ -25,6 +34,26 @@ export default function ParkDetailScreen({ route, navigation }: any) {
     if (checkinsRes.data) setCheckins(checkinsRes.data)
     if (reviewsRes.data) setReviews(reviewsRes.data)
     if (activeRes.data) setActiveCheckin(activeRes.data)
+  }
+
+  const openReviewForm = () => {
+    setRating(userReview?.rating ?? 0)
+    setBody(userReview?.body ?? '')
+    setShowReviewForm(true)
+  }
+
+  const submitReview = async () => {
+    if (!user) return
+    if (rating === 0) { Alert.alert('Velg antall stjerner'); return }
+    setSubmittingReview(true)
+    const { error } = await supabase
+      .from('reviews')
+      .upsert({ park_id: park.id, user_id: user.id, rating, body: body || null }, { onConflict: 'park_id,user_id' })
+    setSubmittingReview(false)
+    if (error) { Alert.alert('Feil', error.message); return }
+    setShowReviewForm(false)
+    Alert.alert('⭐ Takk for anmeldelsen!')
+    fetchData()
   }
 
   const doCheckin = async () => {
@@ -130,10 +159,65 @@ export default function ParkDetailScreen({ route, navigation }: any) {
       {/* Anmeldelser */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Anmeldelser ⭐</Text>
-        {reviews.length === 0 ? (
-          <Text style={styles.emptyText}>Ingen anmeldelser ennå.</Text>
+
+        {/* Skriv anmeldelse / Vis din egen */}
+        {user && !showReviewForm && (
+          userReview ? (
+            <View style={styles.yourReviewCard}>
+              <View style={styles.reviewHeader}>
+                <Text style={styles.yourReviewLabel}>Din anmeldelse</Text>
+                <Text>{'⭐'.repeat(userReview.rating)}</Text>
+              </View>
+              {userReview.body && <Text style={styles.reviewBody}>{userReview.body}</Text>}
+              <TouchableOpacity style={styles.editReviewBtn} onPress={openReviewForm}>
+                <Text style={styles.editReviewBtnText}>✏️ Endre anmeldelse</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.writeReviewBtn} onPress={openReviewForm}>
+              <Text style={styles.writeReviewBtnText}>⭐ Skriv en anmeldelse</Text>
+            </TouchableOpacity>
+          )
+        )}
+
+        {/* Anmeldelses-skjema */}
+        {showReviewForm && (
+          <View style={styles.reviewForm}>
+            <Text style={styles.formLabel}>Vurdering</Text>
+            <View style={styles.starsRow}>
+              {[1,2,3,4,5].map(s => (
+                <TouchableOpacity key={s} onPress={() => setRating(s)}>
+                  <Text style={{ fontSize: 36, opacity: s <= rating ? 1 : 0.25 }}>⭐</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.formLabel}>Kommentar (valgfritt)</Text>
+            <TextInput
+              style={styles.textArea}
+              placeholder="Hvordan var parken?"
+              value={body}
+              onChangeText={setBody}
+              multiline
+              placeholderTextColor={Colors.gray}
+            />
+            <View style={styles.formActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowReviewForm(false)}>
+                <Text style={styles.cancelBtnText}>Avbryt</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.submitBtn} onPress={submitReview} disabled={submittingReview}>
+                {submittingReview
+                  ? <ActivityIndicator color={Colors.white} />
+                  : <Text style={styles.submitBtnText}>{userReview ? 'Oppdater' : 'Send'}</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Andres anmeldelser */}
+        {otherReviews.length === 0 && !userReview ? (
+          <Text style={styles.emptyText}>Ingen anmeldelser ennå – bli den første!</Text>
         ) : (
-          reviews.slice(0, 5).map(r => (
+          otherReviews.slice(0, 5).map(r => (
             <View key={r.id} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
                 <Text style={styles.reviewName}>{r.profiles?.display_name ?? 'Ukjent'}</Text>
@@ -176,7 +260,22 @@ const styles = StyleSheet.create({
   dogChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.greenPale, borderRadius: Radius.full, paddingHorizontal: Spacing.md, paddingVertical: 8 },
   dogChipText: { fontSize: FontSize.sm, fontWeight: '600', color: Colors.dark },
   reviewCard: { backgroundColor: Colors.white, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.sm },
-  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between' },
+  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   reviewName: { fontWeight: '700', color: Colors.dark, fontSize: FontSize.sm },
   reviewBody: { fontSize: FontSize.sm, color: Colors.dark, marginTop: Spacing.sm, lineHeight: 20 },
+  writeReviewBtn: { backgroundColor: Colors.greenPale, borderRadius: Radius.md, padding: Spacing.md, alignItems: 'center', marginBottom: Spacing.md, borderWidth: 1.5, borderColor: Colors.green },
+  writeReviewBtnText: { color: Colors.green, fontWeight: '700', fontSize: FontSize.md },
+  yourReviewCard: { backgroundColor: Colors.greenPale, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1.5, borderColor: Colors.green },
+  yourReviewLabel: { fontWeight: '700', color: Colors.green, fontSize: FontSize.sm },
+  editReviewBtn: { marginTop: Spacing.sm, alignSelf: 'flex-start' },
+  editReviewBtnText: { color: Colors.green, fontWeight: '600', fontSize: FontSize.sm },
+  reviewForm: { backgroundColor: Colors.white, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: Colors.grayLight },
+  formLabel: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.gray, marginBottom: Spacing.sm, marginTop: Spacing.sm },
+  starsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
+  textArea: { backgroundColor: Colors.grayLight, borderRadius: Radius.md, padding: Spacing.md, fontSize: FontSize.md, color: Colors.dark, minHeight: 80, textAlignVertical: 'top' },
+  formActions: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
+  cancelBtn: { flex: 1, backgroundColor: Colors.grayLight, borderRadius: Radius.md, padding: Spacing.md, alignItems: 'center' },
+  cancelBtnText: { color: Colors.dark, fontWeight: '600', fontSize: FontSize.md },
+  submitBtn: { flex: 2, backgroundColor: Colors.green, borderRadius: Radius.md, padding: Spacing.md, alignItems: 'center' },
+  submitBtnText: { color: Colors.white, fontWeight: '700', fontSize: FontSize.md },
 })

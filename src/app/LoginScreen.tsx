@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, ImageBackground, Dimensions } from 'react-native'
 import { Text } from 'react-native'
 import { supabase } from '../lib/supabase'
+import { friendlyError, isNetworkError } from '../lib/errors'
 import { Colors, Spacing, Radius, FontSize } from '../lib/theme'
 
 const { width, height } = Dimensions.get('window')
@@ -11,12 +12,23 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const showError = (error: any, retry: () => void) => {
+    if (isNetworkError(error)) {
+      Alert.alert('Ingen kontakt', friendlyError(error), [
+        { text: 'Avbryt', style: 'cancel' },
+        { text: 'Prøv igjen', onPress: retry },
+      ])
+    } else {
+      Alert.alert('Oi', friendlyError(error))
+    }
+  }
+
   const handleLogin = async () => {
     if (!email || !password) { Alert.alert('Fyll inn e-post og passord'); return }
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
-    if (error) Alert.alert('Feil', error.message)
+    if (error) showError(error, handleLogin)
   }
 
   const handleRegister = async () => {
@@ -24,8 +36,8 @@ export default function LoginScreen() {
     setLoading(true)
     const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
-    if (error) Alert.alert('Feil', error.message)
-    else Alert.alert('Sjekk e-posten din! 📬')
+    if (error) showError(error, handleRegister)
+    else Alert.alert('Velkommen! 🐾', 'Kontoen din er opprettet – du er logget inn.')
   }
 
   return (

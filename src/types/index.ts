@@ -36,11 +36,29 @@ export type Dog = {
   name: string
   breed: string | null
   age_years: number | null
+  birthdate?: string | null
   size: 'liten' | 'middels' | 'stor' | null
   temperament: string[]
   bio: string | null
   photo_url: string | null
+  chip_id: string | null
+  allergies: string | null
+  medications: string | null
+  health_notes: string | null
+  neutered: boolean | null
+  neutered_date: string | null
+  next_vet_visit: string | null
   is_active: boolean
+  created_at: string
+}
+
+export type Vaccination = {
+  id: string
+  dog_id: string
+  vaccine_name: string
+  vaccine_date: string
+  next_due_date: string | null
+  notes: string | null
   created_at: string
 }
 

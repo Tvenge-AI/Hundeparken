@@ -30,6 +30,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# separate sub-project + stale deploy cache (ikke del av appen)
+mcp-server/
+.netlify/
+
 # local env files
 .env*.local
 
