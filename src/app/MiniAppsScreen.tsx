@@ -20,6 +20,7 @@ const miniApps: MiniApp[] = [
   { id: 3, emoji: '', customIcon: 'vetcard', title: 'Veterinærkort', desc: 'Vaksiner og helseinformasjon',  bg: '#2D5A27', accent: '#1e3f1a', available: true, route: 'DogHealth' },
   { id: 4, emoji: '🦴',    title: 'Mat-sjekker',   desc: 'Kan hunden spise dette?',       bg: '#B37429', accent: '#82521a', available: true, route: 'FoodChecker' },
   { id: 5, emoji: '☀️',    title: 'Trygg sommer',  desc: 'Varme, flått og giftige planter', bg: '#3F7CAC', accent: '#2c5c82', available: true, route: 'SummerSafety' },
+  { id: 6, emoji: '🍂',    title: 'Trygg høst',    desc: 'Regn, sopp, mørke og skjulte farer', bg: '#A34A2A', accent: '#7a3620', available: true, route: 'AutumnSafety' },
 ]
 
 export default function MiniAppsScreen({ navigation }: any) {
