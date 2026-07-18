@@ -23,6 +23,7 @@ const miniApps: MiniApp[] = [
   { id: 5, emoji: '☀️',    title: 'Trygg sommer',  desc: 'Varme, flått og giftige planter', bg: '#3F7CAC', accent: '#2c5c82', available: true, route: 'SummerSafety', months: [5, 6, 7, 8] },
   { id: 6, emoji: '🍂',    title: 'Trygg høst',    desc: 'Regn, sopp, mørke og skjulte farer', bg: '#A34A2A', accent: '#7a3620', available: true, route: 'AutumnSafety', months: [9, 10, 11] },
   { id: 7, emoji: '❄️',    title: 'Trygg vinter',  desc: 'Kulde, veisalt, is og julefarer', bg: '#3E6E99', accent: '#2b506f', available: true, route: 'WinterSafety', months: [12, 1, 2] },
+  { id: 8, emoji: '🌱',    title: 'Trygg vår',     desc: 'Pollen, flått, giftige løker og påske', bg: '#5AA02E', accent: '#3d6e1f', available: true, route: 'SpringSafety', months: [3, 4] },
 ]
 
 export default function MiniAppsScreen({ navigation }: any) {

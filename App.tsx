@@ -27,6 +27,7 @@ import RecommendedServicesScreen from './src/app/RecommendedServicesScreen'
 import SummerSafetyScreen from './src/app/SummerSafetyScreen'
 import AutumnSafetyScreen from './src/app/AutumnSafetyScreen'
 import WinterSafetyScreen from './src/app/WinterSafetyScreen'
+import SpringSafetyScreen from './src/app/SpringSafetyScreen'
 
 const Tab = createMaterialTopTabNavigator()
 const Stack = createNativeStackNavigator()
@@ -91,6 +92,7 @@ function AppNavigator() {
           <Stack.Screen name="SummerSafety" component={SummerSafetyScreen} />
           <Stack.Screen name="AutumnSafety" component={AutumnSafetyScreen} />
           <Stack.Screen name="WinterSafety" component={WinterSafetyScreen} />
+          <Stack.Screen name="SpringSafety" component={SpringSafetyScreen} />
         </>
       )}
     </Stack.Navigator>
