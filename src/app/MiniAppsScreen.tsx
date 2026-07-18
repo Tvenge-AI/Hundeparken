@@ -12,6 +12,7 @@ type MiniApp = {
   accent: string
   available: boolean
   route?: string
+  months?: number[] // vises kun disse månedene (1-12). Utelatt = alltid synlig.
 }
 
 const miniApps: MiniApp[] = [
@@ -19,12 +20,17 @@ const miniApps: MiniApp[] = [
   { id: 2, emoji: '', customIcon: 'microchip', title: 'Chip ID',      desc: 'Sjekk og del chipinformasjon', bg: '#2F6E7A', accent: '#1e4c56', available: true, route: 'DogChip' },
   { id: 3, emoji: '', customIcon: 'vetcard', title: 'Veterinærkort', desc: 'Vaksiner og helseinformasjon',  bg: '#2D5A27', accent: '#1e3f1a', available: true, route: 'DogHealth' },
   { id: 4, emoji: '🦴',    title: 'Mat-sjekker',   desc: 'Kan hunden spise dette?',       bg: '#B37429', accent: '#82521a', available: true, route: 'FoodChecker' },
-  { id: 5, emoji: '☀️',    title: 'Trygg sommer',  desc: 'Varme, flått og giftige planter', bg: '#3F7CAC', accent: '#2c5c82', available: true, route: 'SummerSafety' },
-  { id: 6, emoji: '🍂',    title: 'Trygg høst',    desc: 'Regn, sopp, mørke og skjulte farer', bg: '#A34A2A', accent: '#7a3620', available: true, route: 'AutumnSafety' },
+  { id: 5, emoji: '☀️',    title: 'Trygg sommer',  desc: 'Varme, flått og giftige planter', bg: '#3F7CAC', accent: '#2c5c82', available: true, route: 'SummerSafety', months: [5, 6, 7, 8] },
+  { id: 6, emoji: '🍂',    title: 'Trygg høst',    desc: 'Regn, sopp, mørke og skjulte farer', bg: '#A34A2A', accent: '#7a3620', available: true, route: 'AutumnSafety', months: [9, 10, 11] },
+  { id: 7, emoji: '❄️',    title: 'Trygg vinter',  desc: 'Kulde, veisalt, is og julefarer', bg: '#3E6E99', accent: '#2b506f', available: true, route: 'WinterSafety', months: [12, 1, 2] },
 ]
 
 export default function MiniAppsScreen({ navigation }: any) {
   const [selected, setSelected] = useState<number | null>(null)
+
+  // Sesong-fliser (sommer/høst/vinter) vises kun i sine måneder
+  const currentMonth = new Date().getMonth() + 1
+  const visibleApps = miniApps.filter(a => !a.months || a.months.includes(currentMonth))
 
   const handleAppPress = (app: MiniApp) => {
     if (app.available && app.route) {
@@ -64,7 +70,7 @@ export default function MiniAppsScreen({ navigation }: any) {
           <View style={styles.divider} />
 
           <View style={styles.grid}>
-            {miniApps.map((app) => (
+            {visibleApps.map((app) => (
               <TouchableOpacity
                 key={app.id}
                 style={[styles.appItem, { backgroundColor: app.bg }]}
