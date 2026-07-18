@@ -119,8 +119,13 @@ export default function MeetupScreen({ navigation }: any) {
         {meetups.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={{ fontSize: 48 }}>📅</Text>
-            <Text style={styles.emptyTitle}>Ingen planlagte treff</Text>
-            <Text style={styles.emptySubtitle}>Bli den første til å planlegge et hundetreff!</Text>
+            <Text style={styles.emptyTitle}>Ingen planlagte treff ennå</Text>
+            <Text style={styles.emptySubtitle}>Bli den første til å samle hundevenner i parken!</Text>
+            {!showCreate && (
+              <TouchableOpacity style={styles.emptyCtaBtn} onPress={() => setShowCreate(true)} activeOpacity={0.9}>
+                <Text style={styles.emptyCtaText}>+ Lag det første treffet</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           meetups.map(m => (
@@ -175,6 +180,8 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', padding: Spacing.xxl, gap: Spacing.md },
   emptyTitle: { fontSize: FontSize.xl, fontWeight: '800', color: Colors.dark },
   emptySubtitle: { fontSize: FontSize.sm, color: Colors.gray, textAlign: 'center' },
+  emptyCtaBtn: { backgroundColor: Colors.green, borderRadius: Radius.full, paddingHorizontal: Spacing.lg, paddingVertical: 12, marginTop: Spacing.sm },
+  emptyCtaText: { color: Colors.white, fontWeight: '800', fontSize: FontSize.sm },
   meetupCard: { flexDirection: 'row', gap: Spacing.md, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: Radius.xl, margin: Spacing.md, marginBottom: 0, padding: Spacing.md, alignItems: 'center' },
   dateBox: { backgroundColor: Colors.green, borderRadius: Radius.md, width: 50, height: 50, alignItems: 'center', justifyContent: 'center' },
   dateDay: { color: Colors.white, fontSize: FontSize.xl, fontWeight: '900', lineHeight: 22 },

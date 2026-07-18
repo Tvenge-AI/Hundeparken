@@ -153,6 +153,18 @@ export default function HomeScreen({ navigation }: any) {
           Hei {firstName ?? 'der'}! 👋
         </Text>
 
+        {/* Kom-i-gang: vises til man har lagt til sin første hund */}
+        {dogs.length === 0 && (
+          <TouchableOpacity style={styles.addDogCta} onPress={() => navigation.navigate('AddDog')} activeOpacity={0.9}>
+            <Text style={styles.addDogEmoji}>🐶</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addDogTitle}>Legg til hunden din</Text>
+              <Text style={styles.addDogSub}>Kom i gang på ett minutt – så fyller appen seg med det som er relevant for dere.</Text>
+            </View>
+            <Text style={styles.addDogArrow}>›</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Hunde-chips */}
         {dogs.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dogsRow}>
@@ -242,16 +254,13 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         )}
 
-        {/* Empty state — bare hvis ingenting å vise */}
-        {!nearestPark && !hasReminders && !meetups.length && !reviews.length && upcomingBirthdays.length === 0 && (
+        {/* Empty state — for brukere som har hund, men ingen aktivitet ennå */}
+        {dogs.length > 0 && !nearestPark && !hasReminders && !meetups.length && !reviews.length && upcomingBirthdays.length === 0 && (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyEmoji}>🐾</Text>
-            <Text style={styles.emptyText}>Velkommen til Hundeparken!</Text>
+            <Text style={styles.emptyText}>Klar for tur!</Text>
             <Text style={styles.emptyHint}>
-              {dogs.length === 0
-                ? 'Legg til en hund i Profil-fanen, så fyller hjemmesiden seg med relevant info.'
-                : 'Sjekk inn på en park, lag et treff, eller skriv en anmeldelse — så fyller hjemmesiden seg.'
-              }
+              Sjekk inn på en park, lag et treff, eller skriv en anmeldelse — så fyller hjemmesiden seg.
             </Text>
           </View>
         )}
@@ -274,6 +283,12 @@ const styles = StyleSheet.create({
   dashboard: { padding: Spacing.md },
 
   greeting: { fontSize: FontSize.xxl, fontWeight: '900', color: Colors.dark, marginTop: Spacing.md, marginBottom: Spacing.md },
+
+  addDogCta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, backgroundColor: Colors.green, borderRadius: Radius.xl, padding: Spacing.md, marginBottom: Spacing.md },
+  addDogEmoji: { fontSize: 34 },
+  addDogTitle: { fontSize: FontSize.md, fontWeight: '800', color: Colors.white },
+  addDogSub: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.9)', marginTop: 2, lineHeight: 16 },
+  addDogArrow: { fontSize: 28, fontWeight: '800', color: Colors.white },
 
   dogsRow: { gap: Spacing.sm, paddingBottom: Spacing.md, paddingRight: Spacing.md },
   dogChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.greenPale, borderRadius: Radius.full, paddingHorizontal: Spacing.md, paddingVertical: 8 },
