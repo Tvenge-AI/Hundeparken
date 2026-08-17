@@ -70,6 +70,28 @@ export default function SummerSafetyScreen({ navigation }: any) {
           <Text style={styles.sosArrow}>›</Text>
         </TouchableOpacity>
 
+        {/* Hoggorm */}
+        <Text style={styles.sectionTitle}>🐍 Hoggorm</Text>
+        <View style={[styles.card, styles.cardUrgent]}>
+          <Text style={styles.cardEmoji}>🐍</Text>
+          <View style={{ flex: 1 }}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Hoggormbitt</Text>
+              <View style={styles.urgentBadge}>
+                <Text style={styles.urgentBadgeText}>AKUTT</Text>
+              </View>
+            </View>
+            <Text style={styles.cardDesc}>Norges eneste giftslange er aktiv om sommeren og ligger gjerne i lyng, høyt gress, steinrøyser og skogkanter i solvarmen. Hunder blir oftest bitt i snute eller poter når de snuser.</Text>
+          </View>
+        </View>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoText}>• <Text style={styles.bold}>Tegn:</Text> plutselig hevelse (ofte i ansikt/pote), smerte, hunden hyler, to små stikkmerker, sikling, slapphet.</Text>
+          <Text style={styles.infoText}>• <Text style={styles.bold}>Hold hunden i ro</Text> – bær den om du kan. Bevegelse sprer giften raskere.</Text>
+          <Text style={styles.infoText}>• <Text style={styles.bold}>Til dyrlege straks</Text> – hoggormbitt er alltid akutt. Ring gjerne på veien.</Text>
+          <Text style={styles.infoText}>• <Text style={styles.bold}>IKKE</Text> sug ut gift, klem på såret eller legg på trykkbandasje.</Text>
+          <Text style={styles.infoText}>• Hold hunden i bånd i hoggorm-terreng på varme dager.</Text>
+        </View>
+
         {/* Flått */}
         <Text style={styles.sectionTitle}>🕷️ Flått</Text>
         <View style={styles.infoCard}>
