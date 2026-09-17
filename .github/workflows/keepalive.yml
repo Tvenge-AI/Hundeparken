@@ -1,21 +1,21 @@
 name: Keep Supabase Alive
 
-# Gratis-Supabase pauser etter 7 dager uten aktivitet, og da dør hele
-# appen (registrering + innlogging + data). Denne jobben pinger databasen
-# hver 3. dag så prosjektet aldri regnes som inaktivt.
+# Gratis-Supabase pauser etter 7 dager uten "tilstrekkelig aktivitet", og da
+# dør hele appen (registrering + innlogging + data). Lette LESE-kall teller
+# ikke lenger (bekreftet 2026-09), så denne jobben gjør en ekte SKRIV-
+# operasjon hver 3. dag: den oppdaterer en tidsstempel-rad i public.keepalive.
 #
-# Bonus: den skriver en liten tidsstempel-fil tilbake til repoet på hver
-# kjøring. Det holder REPOET aktivt også, slik at GitHub ikke slår av den
-# planlagte jobben etter 60 dager uten aktivitet.
+# Bonus: den skriver også en liten fil tilbake til repoet på hver kjøring,
+# slik at GitHub ikke slår av den planlagte jobben etter 60 dager.
 
 on:
   schedule:
-    # kl. 06:00 UTC på dag 1, 4, 7, 10 ... i måneden (~hver 3. dag)
+    # kl. 06:00 UTC ~hver 3. dag
     - cron: '0 6 */3 * *'
-  workflow_dispatch: {}   # lar deg også kjøre den manuelt fra GitHub → Actions
+  workflow_dispatch: {}
 
 permissions:
-  contents: write          # trengs for å skrive tidsstempel-fila tilbake
+  contents: write
 
 jobs:
   ping:
@@ -24,22 +24,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ping Supabase (holder databasen våken)
+      - name: Skriv til Supabase (ekte aktivitet holder databasen våken)
         run: |
-          # Plukk ut kun de gyldige linjene fra .env (hopp over evt. placeholder/søppel)
           URL=$(grep -E '^EXPO_PUBLIC_SUPABASE_URL=' .env | tail -1 | cut -d= -f2- | tr -d '\r')
           KEY=$(grep -E '^EXPO_PUBLIC_SUPABASE_ANON_KEY=' .env | grep -v 'DIN_' | tail -1 | cut -d= -f2- | tr -d '\r')
-          echo "Pinger $URL (nøkkel-lengde: ${#KEY})"
-          curl -sf -m 30 \
-            "$URL/rest/v1/parks?select=id&limit=1" \
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "Skriver keepalive-tidsstempel ($NOW) til $URL"
+          curl -sf -m 30 -X PATCH \
+            "$URL/rest/v1/keepalive?id=eq.1" \
             -H "apikey: $KEY" \
             -H "Authorization: Bearer $KEY" \
-            -o /dev/null -w "Supabase svarte: HTTP %{http_code}\n"
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"last_ping\":\"$NOW\"}" \
+            -o /dev/null -w "Keepalive-skriv: HTTP %{http_code}\n"
 
-      # Best-effort: holder også repoet aktivt så GitHub ikke slår av den
-      # planlagte jobben etter 60 dager. Feiler dette (f.eks. lese-only
-      # Actions-tillatelser), gjør det ingenting — selve pingen over er det
-      # som teller, og jobben forblir grønn.
+      # Best-effort: holder repoet aktivt så GitHub ikke slår av jobben etter 60 dager.
       - name: Oppdater tidsstempel (holder repoet aktivt)
         continue-on-error: true
         run: |
@@ -48,5 +48,5 @@ jobs:
           git config user.name "keepalive-bot"
           git config user.email "actions@users.noreply.github.com"
           git add .github/keepalive-last-run.txt
-          git commit -m "chore: keepalive ping [skip ci]" || echo "Ingen endring å committe"
-          git push || echo "Kunne ikke pushe tidsstempel (sjekk Actions-tillatelser) — pingen gikk uansett"
+          git commit -m "chore: keepalive ping [skip ci]" || echo "Ingen endring aa committe"
+          git push || echo "Kunne ikke pushe tidsstempel - skrivingen gikk uansett"
